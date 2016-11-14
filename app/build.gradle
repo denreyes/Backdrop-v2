@@ -20,6 +20,13 @@ android {
     }
 }
 
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs 'libs'
+    }
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
@@ -34,4 +41,8 @@ dependencies {
 
     //Circular ImageView
     compile 'de.hdodenhof:circleimageview:2.1.0'
+
+    //Spotify
+    compile 'com.spotify.sdk:spotify-auth:beta23-noconnect-2.20b@aar'
+    compile 'com.spotify.sdk:spotify-player:beta23-noconnect-2.20b@aar'
 }
