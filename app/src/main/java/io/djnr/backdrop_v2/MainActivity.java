@@ -24,12 +24,11 @@ import com.spotify.sdk.android.player.SpotifyPlayer;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity implements
-        SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
+/**
+ * Created by Dj on 11/14/2016.
+ */
+public class MainActivity extends SpotifyActivity{
     private static final String TAG = MainActivity.class.getSimpleName();
-
-    @BindView(R.id.toolbar)
-    Toolbar mToolbar;
     @BindView(R.id.drawer_layout)
     DrawerLayout mDrawerLayout;
     @BindView(R.id.nav_view)
@@ -44,28 +43,17 @@ public class MainActivity extends AppCompatActivity implements
     private static final String TAG_SPOTIFY = "spotify";
     public static String CURRENT_TAG = TAG_SPOTLIGHT;
 
-    private Player mPlayer;
-    private static final int REQUEST_CODE = 1337;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        setSupportActionBar(mToolbar);
-
-        setupNavToggle(mToolbar, mDrawerLayout, mNavView);
-
-        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(AppConfig.Spotify.CLIENT_ID,
-                AuthenticationResponse.Type.TOKEN,
-                AppConfig.Spotify.REDIRECT_URI);
-        builder.setScopes(new String[]{"user-read-private", "streaming"});
-        AuthenticationRequest request = builder.build();
-        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+        getSupportFragmentManager().beginTransaction().replace(R.id.container, new MainFragment()).commit();
     }
 
-    public void setupNavToggle(Toolbar toolbar, final DrawerLayout drawerLayout, NavigationView navView) {
-        navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+    public void setupNavToggle(Toolbar toolbar) {
+        setSupportActionBar(toolbar);
+        mNavView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
 
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
@@ -83,11 +71,13 @@ public class MainActivity extends AppCompatActivity implements
                         CURRENT_TAG = TAG_SAVED;
                         break;
                     case R.id.nav_spotify:
+                        mDrawerLayout.closeDrawers();
                         navItemIndex = 3;
                         CURRENT_TAG = TAG_SPOTIFY;
+                        requestSpotifyLogin();
                         break;
                     case R.id.nav_logout:
-                        drawerLayout.closeDrawers();
+                        mDrawerLayout.closeDrawers();
                         //TODO:LOGOUT
                         break;
                     default:
@@ -105,87 +95,13 @@ public class MainActivity extends AppCompatActivity implements
         });
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle
-                (this, drawerLayout, toolbar, R.string.app_name, R.string.app_name);
-        drawerLayout.setDrawerListener(toggle);
+                (this, mDrawerLayout, toolbar, R.string.app_name, R.string.app_name);
+        mDrawerLayout.setDrawerListener(toggle);
         toggle.syncState();
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        super.onActivityResult(requestCode, resultCode, intent);
-        // Check if result comes from the correct activity
-        if (requestCode == REQUEST_CODE) {
-            AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
-            if (response.getType() == AuthenticationResponse.Type.TOKEN) {
-                Config playerConfig = new Config(this, response.getAccessToken(), AppConfig.Spotify.CLIENT_ID);
-                Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
-                    @Override
-                    public void onInitialized(SpotifyPlayer spotifyPlayer) {
-                        mPlayer = spotifyPlayer;
-                        mPlayer.addConnectionStateCallback(MainActivity.this);
-                        mPlayer.addNotificationCallback(MainActivity.this);
-                    }
-
-                    @Override
-                    public void onError(Throwable throwable) {
-                        Log.e("MainActivity", "Could not initialize player: " + throwable.getMessage());
-                    }
-                });
-            }
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        Spotify.destroyPlayer(this);
-        super.onDestroy();
-    }
-
-    //Spotify Methods
-
-    @Override
-    public void onPlaybackEvent(PlayerEvent playerEvent) {
-        Log.d(TAG, "Playback event received: " + playerEvent.name());
-        switch (playerEvent) {
-            // Handle event type as necessary
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void onPlaybackError(Error error) {
-        Log.d(TAG, "Playback error received: " + error.name());
-        switch (error) {
-            // Handle error type as necessary
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void onLoggedIn() {
-        Log.d("MainActivity", "User logged in");
-        mPlayer.playUri(null, "spotify:track:2TpxZ7JUBn3uw46aR7qd6V", 0, 0);
-    }
-
-    @Override
-    public void onLoggedOut() {
-        Log.d(TAG, "User logged out");
-    }
-
-    @Override
-    public void onLoginFailed(int i) {
-        Log.d(TAG, "Login failed");
-    }
-
-    @Override
-    public void onTemporaryError() {
-        Log.d(TAG, "Temporary error occurred");
-    }
-
-    @Override
-    public void onConnectionMessage(String message) {
-        Log.d(TAG, "Received connection message: " + message);
+    public void requestSpotifyLogin() {
+        super.requestSpotifyLogin();
     }
 }
