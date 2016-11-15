@@ -4,4 +4,10 @@
     <string name="spotlight">Spotlight</string>
     <string name="saved">Saved</string>
     <string name="spotify">Spotify</string>
+
+    <string name="spotify_connect_warning">This feature is only available for Spotify Premium Users. Do you wish to continue?</string>
+    <string name="spotify_disconnect_warning">Do you wish to disconnect Spotify?</string>
+    <string name="contnue">Continue</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="cancel">Cancel</string>
 </resources>
