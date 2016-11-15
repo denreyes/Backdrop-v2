@@ -43,6 +43,12 @@ public abstract class SpotifyActivity extends AppCompatActivity  implements
         if (requestCode == REQUEST_CODE) {
             AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
             if (response.getType() == AuthenticationResponse.Type.TOKEN) {
+
+                //Broadcast oauth token
+                Intent i = new Intent(Constants.BROADCAST_IDS.SPOTIFY_CONNECTED);
+                i.putExtra(Constants.SPOTIFY_CONNECTED_EXTRAS.OAUTH_TOKEN, response.getAccessToken());
+                sendBroadcast(i);
+
                 Config playerConfig = new Config(this, response.getAccessToken(), AppConfig.Spotify.CLIENT_ID);
                 Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
                     @Override
